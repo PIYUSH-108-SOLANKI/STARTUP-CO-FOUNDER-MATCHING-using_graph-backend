@@ -1,0 +1,18 @@
+# Environment variables — NEVER commit this (contains DB password)
+.env
+
+# Virtual environment — too large, recreated from requirements.txt
+venv/
+
+# Python cache files — auto-generated, not needed
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Mac system file
+.DS_Store
+
+# IDE folders
+.vscode/
+.idea/
