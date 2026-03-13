@@ -12,7 +12,16 @@ class ApplicationModel:
         """
         existing = db.execute_query(check_query, {"student_id": student_id, "idea_id": idea_id})
         if existing:
-            return None  # Already applied — signal duplicate to the mutation
+            return {"error": "Already applied to this idea."}
+
+        # REQUIREMENT: Prevent founder from applying to their own idea
+        founder_query = """
+        MATCH (s:Student {id: $student_id})-[:POSTED]->(i:Idea {id: $idea_id})
+        RETURN s
+        """
+        is_founder = db.execute_query(founder_query, {"student_id": student_id, "idea_id": idea_id})
+        if is_founder:
+            return {"error": "You cannot apply to your own startup idea."}
 
         # Instead of returning the whole relationship object (a),
         # we return each property individually using aliases.

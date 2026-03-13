@@ -44,14 +44,15 @@ class ApplyToIdea(graphene.Mutation):
     def mutate(root, info, student_id, idea_id, role):
         result = ApplicationModel.apply(student_id, idea_id, role)
 
-        # REQUIREMENT: Duplicate application prevention
-        # ApplicationModel.apply() returns None if already applied
-        if result is None:
+        # Handle errors (duplicate or founder applying to own idea)
+        if result and "error" in result:
             return ApplyToIdea(
                 ok=False,
-                message="This student has already applied to this idea.",
+                message=result["error"],
                 application=None
             )
+        elif result is None: # Fallback
+            return ApplyToIdea(ok=False, message="Failed to apply to idea.", application=None)
 
         app_obj = ApplicationType(**result)
         return ApplyToIdea(ok=True, message="Application submitted!", application=app_obj)
@@ -131,8 +132,11 @@ class ApplyIdea(graphene.Mutation):
 
     def mutate(root, info, input):
         result = ApplicationModel.apply(input.student_id, input.idea_id, input.role)
-        if result is None:
-            return ApplyIdea(ok=False, message="Already applied to this idea.", application=None)
+        if result and "error" in result:
+            return ApplyIdea(ok=False, message=result["error"], application=None)
+        elif result is None:
+            return ApplyIdea(ok=False, message="Failed to apply to idea.", application=None)
+
         return ApplyIdea(ok=True, message="Application submitted!", application=ApplicationType(**result))
 
 
